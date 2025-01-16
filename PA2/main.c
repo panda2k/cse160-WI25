@@ -317,8 +317,9 @@ int main(int argc, char *argv[])
     printf("Execution time: %.2fms\n", cpu_time_used);
     printf("==============Finished Program 1==============\n");
 
-
-
+    // Cleanup and prepare for second program.
+    free(host_output.data);
+    host_output.data = (int *)calloc(sizeof(int), host_output.shape[0] * host_output.shape[1]);
 
     // =================================================================
     printf("==============Starting Program 2==============\n");
