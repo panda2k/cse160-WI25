@@ -91,9 +91,36 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clCreateBuffer out");
 
     //@@ Copy memory to the GPU here
+    err = clEnqueueWriteBuffer(
+        queue,
+        device_input_1,
+        CL_FALSE,
+        0,
+        sizeof(int) * (a->shape[0] * a->shape[1]),
+        a->data,
+        0,
+        NULL,
+        NULL
+    )
+    CHECK_ERR(err, "copy to device_input_1");
+
+    err = clEnqueueWriteBuffer(
+        queue,
+        device_input_2,
+        CL_FALSE,
+        0,
+        sizeof(int) * (b->shape[0] * b->shape[1]),
+        b->data,
+        0,
+        NULL,
+        NULL
+    )
+    CHECK_ERR(err, "copy to device_input_2");
 
     //@@ define local and global work sizes
-    unsigned int size_a = 0; // @@ replace this with length of the input vector(s)
+    unsigned int size_a = a->shape[0]; // @@ replace this with length of the input vector(s)
+    global_item_size = size_a;
+    local_item_size = 1;
 
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
@@ -106,10 +133,20 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clSetKernelArg 3");
 
     //@@ Launch the GPU Kernel here
+    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global_item_size, local_item_size, 0, NULL, NULL);
+    CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
+    err = clEnqueueReadBuffer(queue, device_output, CL_TRUE, sizeof(int) * size_a, host_output, 0, NULL, NULL);
+    CHECK_ERR(err, "copy GPU memory out");
 
     //@@ Free the GPU memory here
+    err = clReleaseMemObject(device_input_1);
+    CHECK_ERR(err, "free device_input_1");
+    err = clReleaseMemObject(device_input_2);
+    CHECK_ERR(err, "free device_input_2");
+    err = clReleaseMemObject(device_output);
+    CHECK_ERR(err, "free device_output");
 
     // Release Host Memory
     free(kernel_source);
@@ -140,6 +177,9 @@ void part1(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Mat
     SaveMatrix(output_file, host_output);
 
     //@@ Release OpenCL objects here
+    clReleaseContext(context);
+    clReleaseCommandQueue(queue);
+    clReleaseDevice(device_id);
 }
 
 void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* out, cl_context* context, cl_command_queue* queue) {

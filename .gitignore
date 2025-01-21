@@ -18,6 +18,9 @@ vector_store/
 # Ignore MacOS system files
 *.DS_Store
 
+# ignore lsp
+.ccls-cache/
+
 # Ignore compiled C extensions
 *.so
 
