@@ -92,7 +92,7 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
 
     //@@ Copy memory to the GPU here
     err = clEnqueueWriteBuffer(
-        queue,
+        *queue,
         device_input_1,
         CL_FALSE,
         0,
@@ -105,7 +105,7 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "copy to device_input_1");
 
     err = clEnqueueWriteBuffer(
-        queue,
+        *queue,
         device_input_2,
         CL_FALSE,
         0,
@@ -133,11 +133,11 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clSetKernelArg 3");
 
     //@@ Launch the GPU Kernel here
-    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global_item_size, local_item_size, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(*queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
     CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
-    err = clEnqueueReadBuffer(queue, device_output, CL_TRUE, 0, sizeof(int) * size_a, out->data, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(*queue, device_output, CL_TRUE, 0, sizeof(int) * size_a, out->data, 0, NULL, NULL);
     CHECK_ERR(err, "copy GPU memory out");
 
     //@@ Free the GPU memory here
