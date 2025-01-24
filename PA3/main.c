@@ -65,7 +65,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateKernel");
 
     //@@ Allocate GPU memory here
-    device_input_1 = clCreateBuffer(
+    cl_mem device_input_1 = clCreateBuffer(
         *context,
         CL_MEM_READ_ONLY,
         input0->shape[0] * input0->shape[1] * sizeof(int),
@@ -74,7 +74,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     );
     CHECK_ERR(err, "clCreateBuffer a");
 
-    device_input_2 = clCreateBuffer(
+    cl_mem device_input_2 = clCreateBuffer(
         *context,
         CL_MEM_READ_ONLY,
         input1->shape[0] * input1->shape[1] * sizeof(int),
@@ -83,7 +83,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     );
     CHECK_ERR(err, "clCreateBuffer b");
 
-    device_output = clCreateBuffer(
+    cl_mem device_output = clCreateBuffer(
         *context,
         CL_MEM_READ_ONLY,
         result->shape[0] * result->shape[1] * sizeof(int),
