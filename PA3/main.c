@@ -152,7 +152,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
-    err = clEnqueueReadBuffer(queue, device_output, CL_TRUE, 0, sizeof(int) * output_size, result->data, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue, device_output, CL_TRUE, 0, sizeof(int) * result->shape[0] * result->shape[1], result->data, 0, NULL, NULL);
     CHECK_ERR(err, "copy GPU memory out");
 
     //@@ Free the GPU memory here
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
     err = LoadMatrix(input_file_c, &answer);
     CHECK_ERR(err, "LoadMatrix");
 
-    int rows = host_a->shape[0], cols = host_b->shape[1];
+    int rows = host_a.shape[0], cols = host_b.shape[1];
     //@@ Update these values for the output rows and cols of the output
     //@@ Do not use the results from the answer matrix
 
