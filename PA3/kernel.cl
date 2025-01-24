@@ -7,7 +7,7 @@ __kernel void matrixMultiply(
    int dest_i = get_global_id(0), dest_j = get_global_id(1);
     int sum = 0;
     for (int x = 0; x < numAColumns; x++) {
-        sum += A[dest_i * numAColumns + x] * B[x * numBColumns + dest_j];
+        sum += A[x * numAColumns + dest_i] * B[x * numBColumns + dest_j];
     }
     C[dest_i * numCColumns + dest_j] = sum;
 }
