@@ -148,7 +148,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clSetKernelArg 8");
 
     //@@ Launch the GPU Kernel here
-    err = clEnqueueNDRangeKernel(queue, kernel, 0, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
     CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
