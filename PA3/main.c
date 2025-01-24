@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
     err = LoadMatrix(input_file_c, &answer);
     CHECK_ERR(err, "LoadMatrix");
 
-    int rows = host_a.shape[0], cols = host_b.shape[1];
+    int rows = host_a.shape[1], cols = host_b.shape[1];
     //@@ Update these values for the output rows and cols of the output
     //@@ Do not use the results from the answer matrix
 
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
     OpenCLMatrixMultiply(&host_a, &host_b, &host_c);
 
     // // Call to print the matrix
-    PrintMatrix(&host_c);
+    //PrintMatrix(&host_c);
 
     // Save the matrix
     SaveMatrix(input_file_d, &host_c);
