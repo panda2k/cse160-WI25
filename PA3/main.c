@@ -66,7 +66,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 
     //@@ Allocate GPU memory here
     cl_mem device_input_1 = clCreateBuffer(
-        *context,
+        context,
         CL_MEM_READ_ONLY,
         input0->shape[0] * input0->shape[1] * sizeof(int),
         NULL,
@@ -75,7 +75,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateBuffer a");
 
     cl_mem device_input_2 = clCreateBuffer(
-        *context,
+        context,
         CL_MEM_READ_ONLY,
         input1->shape[0] * input1->shape[1] * sizeof(int),
         NULL,
@@ -84,7 +84,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateBuffer b");
 
     cl_mem device_output = clCreateBuffer(
-        *context,
+        context,
         CL_MEM_READ_ONLY,
         result->shape[0] * result->shape[1] * sizeof(int),
         NULL,
@@ -94,7 +94,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 
     //@@ Copy memory to the GPU here
     err = clEnqueueWriteBuffer(
-        *queue,
+        queue,
         device_input_1,
         CL_FALSE,
         0,
@@ -107,7 +107,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "copy to device_input_1");
 
     err = clEnqueueWriteBuffer(
-        *queue,
+        queue,
         device_input_2,
         CL_FALSE,
         0,
@@ -148,11 +148,11 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clSetKernelArg 8");
 
     //@@ Launch the GPU Kernel here
-    err = clEnqueueNDRangeKernel(*queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
     CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
-    err = clEnqueueReadBuffer(*queue, device_output, CL_TRUE, 0, sizeof(int) * output_size, result->data, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue, device_output, CL_TRUE, 0, sizeof(int) * output_size, result->data, 0, NULL, NULL);
     CHECK_ERR(err, "copy GPU memory out");
 
     //@@ Free the GPU memory here
@@ -162,6 +162,10 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "free device_input_2");
     err = clReleaseMemObject(device_output);
     CHECK_ERR(err, "free device_output");
+
+    clReleaseContext(context);
+    clReleaseCommandQueue(queue);
+    clReleaseDevice(device_id);
 
     // release host memory
     free(kernel_source);
@@ -194,7 +198,7 @@ int main(int argc, char *argv[])
     err = LoadMatrix(input_file_c, &answer);
     CHECK_ERR(err, "LoadMatrix");
 
-    int rows, cols;
+    int rows = host_a->shape[0], cols = host_b->shape[1];
     //@@ Update these values for the output rows and cols of the output
     //@@ Do not use the results from the answer matrix
 
