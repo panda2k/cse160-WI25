@@ -5,7 +5,6 @@ __kernel void matrixMultiply(
     const unsigned int numCRows, const unsigned int numCColumns) {
   //@@ Compute C = A^T B 
    int dest_i = get_global_id(0), dest_j = get_global_id(1);
-    // iterate through A[i] and B[j]
     int sum = 0;
     for (int x = 0; x < numAColumns; x++) {
         sum += A[dest_i * numAColumns + x] * B[x * numBColumns + dest_j];

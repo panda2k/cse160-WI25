@@ -65,7 +65,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateKernel");
 
     //@@ Allocate GPU memory here
-    cl_mem device_input_1 = clCreateBuffer(
+    cl_mem device_a = clCreateBuffer(
         context,
         CL_MEM_READ_ONLY,
         input0->shape[0] * input0->shape[1] * sizeof(int),
@@ -74,7 +74,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     );
     CHECK_ERR(err, "clCreateBuffer a");
 
-    cl_mem device_input_2 = clCreateBuffer(
+    cl_mem device_b = clCreateBuffer(
         context,
         CL_MEM_READ_ONLY,
         input1->shape[0] * input1->shape[1] * sizeof(int),
@@ -83,7 +83,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     );
     CHECK_ERR(err, "clCreateBuffer b");
 
-    cl_mem device_output = clCreateBuffer(
+    cl_mem device_c = clCreateBuffer(
         context,
         CL_MEM_READ_ONLY,
         result->shape[0] * result->shape[1] * sizeof(int),
@@ -95,7 +95,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     //@@ Copy memory to the GPU here
     err = clEnqueueWriteBuffer(
         queue,
-        device_input_1,
+        device_a,
         CL_FALSE,
         0,
         sizeof(int) * (input0->shape[0] * input0->shape[1]),
@@ -104,11 +104,11 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
         NULL,
         NULL
     );
-    CHECK_ERR(err, "copy to device_input_1");
+    CHECK_ERR(err, "copy to device_a");
 
     err = clEnqueueWriteBuffer(
         queue,
-        device_input_2,
+        device_b,
         CL_FALSE,
         0,
         sizeof(int) * (input1->shape[0] * input1->shape[1]),
@@ -117,7 +117,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
         NULL,
         NULL
     );
-    CHECK_ERR(err, "copy to device_input_2");
+    CHECK_ERR(err, "copy to device_b");
 
     //@@ define local and global work sizes
     size_t global_item_size[2] = {result->shape[0], result->shape[1]};
@@ -152,16 +152,16 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
-    err = clEnqueueReadBuffer(queue, device_output, CL_TRUE, 0, sizeof(int) * result->shape[0] * result->shape[1], result->data, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue, device_c, CL_TRUE, 0, sizeof(int) * result->shape[0] * result->shape[1], result->data, 0, NULL, NULL);
     CHECK_ERR(err, "copy GPU memory out");
 
     //@@ Free the GPU memory here
-    err = clReleaseMemObject(device_input_1);
-    CHECK_ERR(err, "free device_input_1");
-    err = clReleaseMemObject(device_input_2);
-    CHECK_ERR(err, "free device_input_2");
-    err = clReleaseMemObject(device_output);
-    CHECK_ERR(err, "free device_output");
+    err = clReleaseMemObject(device_a);
+    CHECK_ERR(err, "free device_a");
+    err = clReleaseMemObject(device_b);
+    CHECK_ERR(err, "free device_b");
+    err = clReleaseMemObject(device_c);
+    CHECK_ERR(err, "free device_c");
 
     clReleaseContext(context);
     clReleaseCommandQueue(queue);
