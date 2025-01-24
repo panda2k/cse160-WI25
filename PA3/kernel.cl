@@ -9,7 +9,6 @@ __kernel void matrixMultiply(
     for (int x = 0; x < numARows; x++) {
         int a = A[x * numAColumns + dest_i];
         int b = B[x * numBColumns + dest_j];
-        printf("%d * %d -> %d %d", a, b, dest_i, dest_j);
         sum += A[x * numAColumns + dest_i] * B[x * numBColumns + dest_j];
     }
     C[dest_i * numCColumns + dest_j] = sum;
