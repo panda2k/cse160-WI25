@@ -12,6 +12,10 @@
             devShell = pkgs.mkShell {
                 buildInputs = with pkgs; [
                     ccls
+                    intel-compute-runtime
+                    clinfo
+                    opencl-headers
+                    ocl-icd
                 ];
             };
         }

@@ -65,10 +65,63 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateKernel");
 
     //@@ Allocate GPU memory here
+    device_input_1 = clCreateBuffer(
+        *context,
+        CL_MEM_READ_ONLY,
+        input0->shape[0] * input0->shape[1] * sizeof(int),
+        NULL,
+        &err
+    );
+    CHECK_ERR(err, "clCreateBuffer a");
+
+    device_input_2 = clCreateBuffer(
+        *context,
+        CL_MEM_READ_ONLY,
+        input1->shape[0] * input1->shape[1] * sizeof(int),
+        NULL,
+        &err
+    );
+    CHECK_ERR(err, "clCreateBuffer b");
+
+    device_output = clCreateBuffer(
+        *context,
+        CL_MEM_READ_ONLY,
+        result->shape[0] * result->shape[1] * sizeof(int),
+        NULL,
+        &err
+    );
+    CHECK_ERR(err, "clCreateBuffer out");
 
     //@@ Copy memory to the GPU here
+    err = clEnqueueWriteBuffer(
+        *queue,
+        device_input_1,
+        CL_FALSE,
+        0,
+        sizeof(int) * (input0->shape[0] * input0->shape[1]),
+        input0->data,
+        0,
+        NULL,
+        NULL
+    );
+    CHECK_ERR(err, "copy to device_input_1");
+
+    err = clEnqueueWriteBuffer(
+        *queue,
+        device_input_2,
+        CL_FALSE,
+        0,
+        sizeof(int) * (input1->shape[0] * input1->shape[1]),
+        input1->data,
+        0,
+        NULL,
+        NULL
+    );
+    CHECK_ERR(err, "copy to device_input_2");
 
     //@@ define local and global work sizes
+    size_t global_item_size[2] = {result->shape[0], result->shape[1]};
+    size_t local_item_size[2] = {1, 1};
 
     // Set the arguments to our compute kernel
     // __global const int *A, __global const int *B, __global int *C,
@@ -95,11 +148,23 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clSetKernelArg 8");
 
     //@@ Launch the GPU Kernel here
+    err = clEnqueueNDRangeKernel(*queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+    CHECK_ERR(err, "launch kernel");
 
     //@@ Copy the GPU memory back to the CPU here
+    err = clEnqueueReadBuffer(*queue, device_output, CL_TRUE, 0, sizeof(int) * output_size, result->data, 0, NULL, NULL);
+    CHECK_ERR(err, "copy GPU memory out");
 
     //@@ Free the GPU memory here
+    err = clReleaseMemObject(device_input_1);
+    CHECK_ERR(err, "free device_input_1");
+    err = clReleaseMemObject(device_input_2);
+    CHECK_ERR(err, "free device_input_2");
+    err = clReleaseMemObject(device_output);
+    CHECK_ERR(err, "free device_output");
 
+    // release host memory
+    free(kernel_source);
 }
 
 int main(int argc, char *argv[])
